@@ -25,7 +25,10 @@ def get_access_token(client_id, client_secret):
     return token_info['access_token']
 
 # URL to make the API call taken from documentation (needs to be updated using information from )
-api_url = 'https://api.digikey.com/products/v4/search/P5555-ND/productdetails'
+api_url = 'https://api.digikey.com/products/v4/search/nf /productdetails'
+#api_url_DigiReelPricing = 'https:/api.digikey.com/products/v4/search/TMK105BJ104KV-F/digireelpricing'
+#P5555-ND
+
 
 # Function to make an API call. 
 def make_api_call(api_url, access_token):
@@ -33,9 +36,9 @@ def make_api_call(api_url, access_token):
     headers = {
         'Authorization': f'Bearer {access_token}',
         'X-DIGIKEY-Client-Id': client_id,
-        'X-DIGIKEY-Locale-Site': 'US',
+        'X-DIGIKEY-Locale-Site': 'UK',
         'X-DIGIKEY-Locale-Language': 'en',
-        'X-DIGIKEY-Locale-Currency': 'USD',
+        'X-DIGIKEY-Locale-Currency': 'GBP',
         'X-DIGIKEY-Customer-Id': '0',
     }
     response = requests.get(api_url, headers=headers)
