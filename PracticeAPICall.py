@@ -59,13 +59,13 @@ def main():
     if 'status' in api_response:
         #404 error indicates no product has been found
         if api_response['status'] == 404:
-            print("working")
+            print("Product not found")
         #Different error being produced and product still hasn't been found.
         else:
-            print("Status works")
+            print("Other error not 404")
     #No status and therefore no error indicating that everything is working and therefore a product has been found.
     else:
         unit_price = api_response.get('Product', {}).get('UnitPrice')
-        print("Doesn't work")
+        print("Product found")
         print("Unit price: ",unit_price)
 main()
