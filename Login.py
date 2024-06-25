@@ -2,40 +2,12 @@ import customtkinter
 import tkinter
 from tkinter import END
 import hashlib
+import subprocess
 
 #Used to set the appearance setting of the application being created. Using dark theme if not set application will use the devices settings.
 customtkinter.set_appearance_mode("dark")
 #Setting the colour theme of the application to dark blue but can also be set to green or blue. 
 customtkinter.set_default_color_theme("green")
-
-#Function responsible for loading main application
-def main_application():
-      #Trying to make a request to the server
-      
-
-      #Closing window for login screen 
-      login_window.destroy()
-      #Creating the new window for the main application
-      application_window = customtkinter.CTk()
-
-      application_screen_width = application_window.winfo_screenwidth()
-      application_screen_height = application_window.winfo_screenheight()
-
-      #Sizing the window to fill the entire screen using global variables created previously for login
-      application_window.geometry(f"{application_screen_width}x{application_screen_height}")
-
-      #Setting the name of the application
-      application_window.title("DigiKey Pricing Application")
-
-      application_window_frame = customtkinter.CTkFrame(master=application_window)
-      application_window_frame.pack(pady=75, padx=150, fill="both", expand=True)
-
-      application_window_label = customtkinter.CTkLabel(master=application_window_frame, text="DigiKey Price Calculation", font=("Roboto", 30))
-      application_window_label.pack(pady=30, padx=10)
-
-
-
-      application_window.mainloop()
 
 login_window = customtkinter.CTk()
 
@@ -77,15 +49,11 @@ def login():
     entered_password_hash = hashlib.sha384(enc_entered_password).hexdigest()
 
     if hash == entered_password_hash and entered_username == username:
-          main_application()
+            selected_appearance_mode = appearance_mode_optionemenu.get()
+            subprocess.run(["python3", "DigikeyPricing.py", selected_appearance_mode])
     else:
           entry_username.delete(0, END)
           entry_password.delete(0, END)
-
-    #print(hash)
-
-    #print(entered_username)
-    #print(entered_password)
 
 def change_appearance_mode_event(new_appearance_mode: str):
         customtkinter.set_appearance_mode(new_appearance_mode)
