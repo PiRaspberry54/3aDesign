@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import filedialog
 import csv
 import requests
+import customtkinter
+from tkinter import END
  
 #text_widget.delete(1.0, tk.END)  # Clear previous content
 #text_widget.insert(tk.END, array_file)
@@ -102,24 +104,20 @@ def open_file():
                     unit_price_string = str(unit_price)
                     total_price_string = str(total_price_rounded)
                     running_total_price = running_total_price + total_price_rounded
-                    product_found_string = 'Product Number: ' + product_code_value + ' Unit Price: £' + unit_price_string + ' Quantity: ' + quantity_value + ' Total Price: £' + total_price_string
+                    product_found_string = 'Product Number:  ' + product_code_value + '  Unit Price: £' + unit_price_string + '  Quantity: ' + quantity_value + '  Price: £' + total_price_string
                     product_found.append(product_found_string)
             
             num_products_found = len(product_found)
             num_products_notFound = len(product_notFound)
-            #print(f"Product found unit price: {product_found}")
-            #print(f"Product not found: {product_notFound}")
-            #print(num_products_found)
-            #print(num_products_notFound)
 
             i = 0
             e = 0
 
+            text_widget.delete(1.0, tk.END)  # Clear previous content
+            #Insert each line into the first textbox for products found
             while num_products_found > i:
-                #print("Products found: ")
                 current_line_product_found = product_found[i]
-                #print(current_line_product_found)
-                text_widget.insert(tk.END, current_line_product_found)
+                text_widget.insert(tk.END, current_line_product_found + '\n')
                 i = i + 1
             
             #Adding total price
@@ -127,29 +125,51 @@ def open_file():
             running_total_price_string = "Total Price: £" + running_total_price_Tostring
             text_widget.insert(tk.END, running_total_price_string)
             
+            text_widget2.delete(1.0, tk.END)  # Clear previous content
+            #Insert each line into the second text box for products not found
             while num_products_notFound > e:
-                #print("Products not found: ")
                 current_line_product = product_notFound[e]
-                #print(current_line_product)
-                text_widget2.insert(tk.END, current_line_product)
+                text_widget2.insert(tk.END, current_line_product + '\n')
                 e = e + 1
-            #print(f"Quantities: {quantity}")
  
 # Create the main window
-root = tk.Tk()
-root.title("Text File Reader")
- 
-# Create a Text widget to display product pricing
-text_widget = tk.Text(root, wrap="word", width=40, height=10)
-text_widget.pack(pady=10)
+application_window = customtkinter.CTk()
 
+# Get the screen width and height
+screen_width = application_window.winfo_screenwidth()
+screen_height = application_window.winfo_screenheight()
+
+# Set the geometry of the window with the calculated position
+application_window.geometry(f"{screen_width}x{screen_height}")
+
+#Name for application
+application_window.title("DigiKey Pricing Application")
+
+frame = customtkinter.CTkFrame(master=application_window)
+frame.pack(pady=20, padx=60, fill="both", expand=True)
+
+#Title for application
+application_window_label = customtkinter.CTkLabel(master=frame, text="DigiKey Price Calculator", font=("Roboto", 30))
+application_window_label.pack(pady=30, padx=10)
+
+
+#Label for text box
+text_widget_label = customtkinter.CTkLabel(master=frame, text="DigiKey Price Calculator", font=("Roboto", 20))
+text_widget_label .pack(pady=10, padx=5)
+# Create a Text widget to display product pricing
+text_widget = customtkinter.CTkTextbox(master=frame, font=("Roboto", 18))
+text_widget.pack(pady=20, padx=40, fill="both", expand=True)
+
+#Label for text box
+text_widget2_label = customtkinter.CTkLabel(master=frame, text="DigiKey Price Calculator", font=("Roboto", 20))
+text_widget2_label.pack(pady=10, padx=5)
 #Creatte a Text widget to display information on products not found
-text_widget2 = tk.Text(root, wrap="word", width=40, height=10)
-text_widget2.pack(pady=10)
+text_widget2 = customtkinter.CTkTextbox(master=frame, font=("Roboto", 18))
+text_widget2.pack(pady=20, padx=40, fill="both", expand=True)
  
 # Create a button to open the file
-open_button = tk.Button(root, text="Open File", command=open_file)
+open_button = customtkinter.CTkButton(master=frame, text="Open File", command=open_file)
 open_button.pack(pady=10)
  
 # Run the Tkinter event loop
-root.mainloop()
+application_window.mainloop()
