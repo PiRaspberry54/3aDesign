@@ -25,7 +25,9 @@ def get_access_token(client_id, client_secret):
     return token_info['access_token']
 
 # URL to make the API call taken from documentation (needs to be updated using information from )
-api_url = 'https://api.digikey.com/products/v4/search/CL21A106KAYNNNE/productdetails'
+siteExtension = "CL21A106KAYNNNE" 
+api_url = ("https://api.digikey.com/products/v4/search/%s/productdetails" %(siteExtension))
+#api_url = 'https://api.digikey.com/products/v4/search/CL21A106KAYNNNE/productdetails'
 #api_url_DigiReelPricing = 'https:/api.digikey.com/products/v4/search/TMK105BJ104KV-F/digireelpricing'
 #P5555-ND
 

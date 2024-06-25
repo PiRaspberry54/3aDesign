@@ -18,8 +18,11 @@ def main_application():
       #Creating the new window for the main application
       application_window = customtkinter.CTk()
 
+      application_screen_width = application_window.winfo_screenwidth()
+      application_screen_height = application_window.winfo_screenheight()
+
       #Sizing the window to fill the entire screen using global variables created previously for login
-      application_window.geometry(f"{screen_width}x{screen_height}")
+      application_window.geometry(f"{application_screen_width}x{application_screen_height}")
 
       #Setting the name of the application
       application_window.title("DigiKey Pricing Application")
