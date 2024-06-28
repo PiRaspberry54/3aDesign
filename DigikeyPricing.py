@@ -49,6 +49,104 @@ def make_api_call(api_url, access_token):
     #response.raise_for_status()
     return response.json()
 
+def fifty_units(json, units):
+    breakpoint_json_data = get_breakpoint(json)
+    breakpoint_options = get_breakpoint_options(breakpoint_json_data)
+    num_units = units * 50
+    breakpoint = choose_breakpoint(breakpoint_options, num_units)
+
+    price = price_calculator(breakpoint_json_data, breakpoint)
+
+    print(breakpoint_options)
+    print(num_units)
+    print(breakpoint)
+    print(price)
+
+    #While loop is to catch any products that are greater than the largest breakpoint and therefore require additional packets to be brought
+    while num_units > breakpoint:
+        num_units = num_units - breakpoint
+        breakpoint = choose_breakpoint(breakpoint_options, num_units)
+        price = price + choose_breakpoint(breakpoint_options, num_units)
+
+        print(breakpoint)
+        print(price)
+    
+    return price
+
+def price_calculator(json_data, quantity):
+    # Find the corresponding pricing information
+    selected_pricing = None
+    for pricing_info in json_data['StandardPricing']:
+        if pricing_info['BreakQuantity'] == quantity:
+            selected_pricing = pricing_info['TotalPrice']
+            break
+    return selected_pricing
+
+#Compares options available with unit amount to select correct breakpoint
+def choose_breakpoint(options, units):
+    array_length = len(options)
+    option_selected = 0
+    
+    #For loop iterating through entire length of array of options
+    for i in range(array_length):
+        #Starts by comparing first option with unit to see if they are the same if so ends search
+        if options[i] == units:
+            option_selected = options[i]
+            break
+        #Checks the other options not including last as there be know next option
+        elif i < len(options) - 1:
+            current_option = options[i]
+            next_option = options[i + 1]
+            #Looks to see if next option than but bigger then current option
+            if current_option <= units < next_option:
+                option_selected = next_option
+                break
+            #Else current option is correct as smaller than current option
+            elif units < current_option:
+                option_selected = current_option
+                break
+            else:
+                option_selected = next_option
+    
+    #If unit is larger than biggest option breakpoint returned is large option.
+    if units >= options[-1]:
+        option_selected = options[-1]
+    
+    #Used if there is only one option
+    if option_selected == 0:
+        option_selected = options[0]
+    
+    return option_selected
+
+#Function will take the json data and discover what the different breakpoint options are
+def get_breakpoint_options(json):
+        #Array to hold breakpoint options
+    breakpoints = []
+    for options in json['StandardPricing']:
+        breakpoint_value = options['BreakQuantity']
+        breakpoints.append(breakpoint_value)
+    return breakpoints
+        
+#Function for getting json data for breakpoint of prices
+#Looking to see package type options and return json data for package type option that is appropriate 
+def get_breakpoint(json):
+    #Iterates through to see if bulk option is available 
+    json_data = None
+    product_variations = json['Product']['ProductVariations']
+    
+    # Loop through to find bulk product otion if it exisists 
+    for variation in product_variations:
+        if variation['PackageType']['Name'] == 'Bulk':
+            json_data = variation
+            break
+    
+    for variation in product_variations:
+        if variation['PackageType']['Name'] == 'Cut Tape (CT)':
+            json_data = variation
+            break   
+
+    return json_data
+
 def open_file():
     file_path = filedialog.askopenfilename(
         title="Select a Text File", filetypes=[("Text files", "*.csv")])
@@ -107,6 +205,7 @@ def open_file():
                     running_total_price = running_total_price + total_price_rounded
                     product_found_string = 'Product Number:  ' + product_code_value + '  Unit Price: £' + unit_price_string + '  Quantity: ' + quantity_value + '  Price: £' + total_price_string
                     product_found.append(product_found_string)
+                    fifty_units(api_response, quantity_value_int)
             
             num_products_found = len(product_found)
             num_products_notFound = len(product_notFound)
