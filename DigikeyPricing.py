@@ -78,7 +78,7 @@ def price_comparison(price, break_options, breakpoint, data):
 
 
 
-def fifty_units(json, units, num_products):
+def multiple_units(json, units, num_products):
     breakpoint_json_data = get_breakpoint(json)
     breakpoint_options = get_breakpoint_options(breakpoint_json_data)
     num_units = units * num_products
@@ -204,7 +204,7 @@ def open_file():
             product_notFound = []
 
             running_total_price = 0
-            running_total_price_fifty = 0
+            running_total_price_multiple = 0
         
             #By starting at one you can remove the first line which is headers
             x = 1
@@ -245,12 +245,12 @@ def open_file():
                     running_total_price = running_total_price + total_price_rounded
                     product_found_string = 'Product Number:  ' + product_code_value + '  Unit Price: £' + unit_price_string + '  Quantity: ' + quantity_value + '  Price: £' + total_price_string
                     product_found.append(product_found_string)
-                    total_price_fifty = fifty_units(api_response, quantity_value_int, entered_num_products)
-                    total_price_fifty_rounded = round(total_price_fifty, 2)
-                    total_price_fifty_string = str(total_price_fifty_rounded)
-                    fifty_products = "Product Number:  " + product_code_value + "  Price: £" + total_price_fifty_string
-                    running_total_price_fifty = running_total_price_fifty + total_price_fifty
-                    text_widget3.insert(tk.END, fifty_products + '\n')
+                    total_price_multiple = multiple_units(api_response, quantity_value_int, entered_num_products)
+                    total_price_multiple_rounded = round(total_price_multiple, 2)
+                    total_price_multiple_string = str(total_price_multiple_rounded)
+                    multiple_products = "Product Number:  " + product_code_value + "  Price: £" + total_price_multiple_string
+                    running_total_price_multiple = running_total_price_multiple + total_price_multiple
+                    text_widget3.insert(tk.END, multiple_products + '\n')
             
             num_products_found = len(product_found)
             num_products_notFound = len(product_notFound)
@@ -277,10 +277,10 @@ def open_file():
                 text_widget2.insert(tk.END, current_line_product + '\n')
                 e = e + 1
 
-            running_total_price_fifty_rounded = round(running_total_price_fifty, 2)
-            running_total_price_fifty_Tostring = str(running_total_price_fifty_rounded)
-            running_total_price_fifty_string = "Total Price: £" + running_total_price_fifty_Tostring
-            text_widget3.insert(tk.END, running_total_price_fifty_string)
+            running_total_price_multiple_rounded = round(running_total_price_multiple, 2)
+            running_total_price_multiple_Tostring = str(running_total_price_multiple_rounded)
+            running_total_price_multiple_string = "Total Price: £" + running_total_price_multiple_Tostring
+            text_widget3.insert(tk.END, running_total_price_multiple_string)
  
 # Create the main window
 application_window = customtkinter.CTk()
