@@ -49,10 +49,39 @@ def make_api_call(api_url, access_token):
     #response.raise_for_status()
     return response.json()
 
-def fifty_units(json, units):
+#Function checks if the next breakpoint is better value for money
+def price_comparison(price, break_options, breakpoint, data):
+    length_breakpoint_options = len(break_options)
+    x = 0
+    #Holds place of breakpoint in array
+    i = 0
+    #Find place in array of current breakpoint
+    while length_breakpoint_options > x:
+        current_breakpoint = break_options[x]
+        if current_breakpoint == breakpoint:
+            i = x
+            break
+        x = x+1
+    #Check to see if there is another breakpoint after current
+    if i >= length_breakpoint_options - 1:
+        return price
+    else:
+        new_breakpoint = break_options[x+1]
+        print("New breakpoint: ", new_breakpoint)
+        new_price = price_calculator(data, new_breakpoint)
+        print("Price of next breakpoint: ", new_price)
+        if new_price < price:
+            price = new_price
+            return price
+        else:
+            return price
+
+
+
+def fifty_units(json, units, num_products):
     breakpoint_json_data = get_breakpoint(json)
     breakpoint_options = get_breakpoint_options(breakpoint_json_data)
-    num_units = units * 50
+    num_units = units * num_products
     breakpoint = choose_breakpoint(breakpoint_options, num_units)
 
     price = price_calculator(breakpoint_json_data, breakpoint)
@@ -60,7 +89,11 @@ def fifty_units(json, units):
     print(breakpoint_options)
     print(num_units)
     print(breakpoint)
-    print(price)
+    print("Current price: ",price)
+
+    final_price = price_comparison(price, breakpoint_options, breakpoint, breakpoint_json_data)
+
+    print("New price: ", price)
 
     #While loop is to catch any products that are greater than the largest breakpoint and therefore require additional packets to be brought
     while num_units > breakpoint:
@@ -68,10 +101,14 @@ def fifty_units(json, units):
         breakpoint = choose_breakpoint(breakpoint_options, num_units)
         price = price + choose_breakpoint(breakpoint_options, num_units)
 
-        print(breakpoint)
-        print(price)
+        print("Breakpoint for overflow: ", breakpoint)
+        print("Price for overflow: ", price)
+
+        #Call price comparison to check if the next price breakpoint is cheaper for the rest of the product still to buy
+        final_price = final_price + price_comparison(price, breakpoint_options, breakpoint, breakpoint_json_data)
+        print(final_price)
     
-    return price
+    return final_price
 
 def price_calculator(json_data, quantity):
     # Find the corresponding pricing information
@@ -134,7 +171,7 @@ def get_breakpoint(json):
     json_data = None
     product_variations = json['Product']['ProductVariations']
     
-    # Loop through to find bulk product otion if it exisists 
+    # Loop through to find bulk product option if it exisists 
     for variation in product_variations:
         if variation['PackageType']['Name'] == 'Bulk':
             json_data = variation
@@ -148,6 +185,7 @@ def get_breakpoint(json):
     return json_data
 
 def open_file():
+    entered_num_products = int(user_input_entry.get())
     file_path = filedialog.askopenfilename(
         title="Select a Text File", filetypes=[("Text files", "*.csv")])
     if file_path:
@@ -159,12 +197,14 @@ def open_file():
             #Used to discover length of the file to be used for while loop to go through each line
             array_file_length = len(array_file)
             text_widget.delete(1.0, tk.END)  # Clear previous content
+            text_widget3.delete(1.0, tk.END)  # Clear previous content
 
             #Initialise empty arrays for storing product info from request of recording records that weren't recored.
             product_found = []
             product_notFound = []
 
             running_total_price = 0
+            running_total_price_fifty = 0
         
             #By starting at one you can remove the first line which is headers
             x = 1
@@ -205,7 +245,12 @@ def open_file():
                     running_total_price = running_total_price + total_price_rounded
                     product_found_string = 'Product Number:  ' + product_code_value + '  Unit Price: £' + unit_price_string + '  Quantity: ' + quantity_value + '  Price: £' + total_price_string
                     product_found.append(product_found_string)
-                    fifty_units(api_response, quantity_value_int)
+                    total_price_fifty = fifty_units(api_response, quantity_value_int, entered_num_products)
+                    total_price_fifty_rounded = round(total_price_fifty, 2)
+                    total_price_fifty_string = str(total_price_fifty_rounded)
+                    fifty_products = "Product Number:  " + product_code_value + "  Price: £" + total_price_fifty_string
+                    running_total_price_fifty = running_total_price_fifty + total_price_fifty
+                    text_widget3.insert(tk.END, fifty_products + '\n')
             
             num_products_found = len(product_found)
             num_products_notFound = len(product_notFound)
@@ -231,6 +276,11 @@ def open_file():
                 current_line_product = product_notFound[e]
                 text_widget2.insert(tk.END, current_line_product + '\n')
                 e = e + 1
+
+            running_total_price_fifty_rounded = round(running_total_price_fifty, 2)
+            running_total_price_fifty_Tostring = str(running_total_price_fifty_rounded)
+            running_total_price_fifty_string = "Total Price: £" + running_total_price_fifty_Tostring
+            text_widget3.insert(tk.END, running_total_price_fifty_string)
  
 # Create the main window
 application_window = customtkinter.CTk()
@@ -258,22 +308,34 @@ application_window_label = customtkinter.CTkLabel(master=frame, text="DigiKey Pr
 application_window_label.pack(pady=30, padx=10)
 
 #Label for text box
-text_widget_label = customtkinter.CTkLabel(master=frame, text="DigiKey Product Pricing", font=("Roboto", 20))
-text_widget_label .pack(pady=10, padx=5)
+text_widget_label = customtkinter.CTkLabel(master=frame, text="DigiKey Product Pricing", font=("Roboto", 20), height=25)
+text_widget_label .pack(pady=5, padx=5)
 # Create a Text widget to display product pricing
-text_widget = customtkinter.CTkTextbox(master=frame, font=("Roboto", 16))
-text_widget.pack(pady=20, padx=40, fill="both", expand=True)
+text_widget = customtkinter.CTkTextbox(master=frame, font=("Roboto", 16), height=100)
+text_widget.pack(pady=20, padx=20, fill="both", expand=True)
 
 #Label for text box
-text_widget2_label = customtkinter.CTkLabel(master=frame, text="Unfound Products", font=("Roboto", 20))
-text_widget2_label.pack(pady=10, padx=5)
+text_widget2_label = customtkinter.CTkLabel(master=frame, text="Unfound Products", font=("Roboto", 20), height=25)
+text_widget2_label.pack(pady=5, padx=5)
 #Creatte a Text widget to display information on products not found
-text_widget2 = customtkinter.CTkTextbox(master=frame, font=("Roboto", 16))
-text_widget2.pack(pady=20, padx=40, fill="both", expand=True)
+text_widget2 = customtkinter.CTkTextbox(master=frame, font=("Roboto", 16), height=100)
+text_widget2.pack(pady=20, padx=20, fill="both", expand=True)
+
+#Label for text box
+text_widget3_label = customtkinter.CTkLabel(master=frame, text="Pricing for Multiple Products", font=("Roboto", 20), height=25)
+text_widget3_label.pack(pady=5, padx=5)
+
+# Entry widget for user input for number of products
+user_input_entry = customtkinter.CTkEntry(master=frame, font=("Roboto", 16))
+user_input_entry.pack(pady=10)
+
+#Creatte a Text widget to display information on products not found
+text_widget3 = customtkinter.CTkTextbox(master=frame, font=("Roboto", 16), height=100)
+text_widget3.pack(pady=20, padx=20, fill="both", expand=True)
  
 # Create a button to open the file
 open_button = customtkinter.CTkButton(master=frame, text="Open File", command=open_file)
-open_button.pack(pady=10)
+open_button.pack(pady=20)
  
 # Run the Tkinter event loop
 application_window.mainloop()
